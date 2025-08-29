@@ -1,17 +1,45 @@
-name: Super-Linter
+name: CI/CD Pipeline
 
-on: push
+on:
+  push:
+    branches: [ "main" ]   # Run pipeline when pushing to main
+  pull_request:
+    branches: [ "main" ]   # Also run on PRs to main
 
 jobs:
-  super-lint:
-    name: Lint code base
+  build-and-test:
     runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'  # use Node.js version 18
+
+      # 3. Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # 4. Run tests
+      - name: Run tests
+        run: npm test
+
+  deploy:
+    needs: build-and-test   # Only run if build-and-test succeeds
+    runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - name: Run Super-Linter
-        uses: github/super-linter@v3    
-        env:
-          DEFAULT_BRANCH: main
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      - name: Deploy to Production
+        run: echo "🚀 Deploying app..." 
+        # Here you can add deployment commands like:
+        # run: npm run deploy
+        # Or use scp/rsync to copy files to a server
+        # Or deploy to AWS, Heroku, Netlify, Vercel etc.
